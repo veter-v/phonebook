@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from typing import Optional
 import pandas as pd
 import json
+from data_request_model import User
 
 app = FastAPI()
 
@@ -12,8 +13,7 @@ async def root():
 
 
 @app.post('/add-user')
-async def add_user(firstname: str, lastname: str, phone_number: str,
-                   age: Optional[int] = None):
+async def add_user(parameters: User):
     """Считываем/создаём телефонный справочник"""
     try:
         df_phonebook = pd.read_csv('db.csv')
@@ -22,25 +22,27 @@ async def add_user(firstname: str, lastname: str, phone_number: str,
                                              'Phone number', 'Age'])
 
     user_dict = {}
-    user_dict['Firstname'] = firstname
-    user_dict['Lastname'] = lastname
-    user_dict['Phone number'] = phone_number
+    print(type(parameters))
 
-    print(f'Firstname: {firstname}')
-    print(f'Lastname: {lastname}')
-    print(f'Phone number: {phone_number}')
-    if age:
-        print(f'Age {age}')
-        user_dict['Age'] = age
+    user_dict['Firstname'] = parameters.firstname
+    user_dict['Lastname'] = parameters.lastname
+    user_dict['Phone number'] = parameters.phone_number
+
+    print(f'Firstname: {parameters.firstname}')
+    print(f'Lastname: {parameters.lastname}')
+    print(f'Phone number: {parameters.phone_number}')
+    if parameters.age:
+        print(f'Age {parameters.age}')
+        user_dict['Age'] = parameters.age
     else:
-        user_dict['Age'] = None
+        user_dict['Age'] = 0
 
     print(user_dict)
     df_temp = pd.DataFrame([user_dict])
     print(df_phonebook)
     print(df_temp)
     df_phonebook = pd.concat([df_phonebook, df_temp])
-    df_phonebook.to_csv('db.csv')
+    df_phonebook.to_csv('db.csv', index=False)
     return 'user is added'
 
 
